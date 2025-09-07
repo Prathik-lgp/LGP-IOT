@@ -13,7 +13,7 @@ void loop()
 {
   iot.ReadAll(); // Read all values from the cloud
 
-  // Read button state on D0 and upload it
+  // Read IR sensor state on D2 and upload it
   iot.SyncIN("D2");
 
   delay(50); // wait 50 milliseconds
