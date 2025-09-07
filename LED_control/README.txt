@@ -1,4 +1,4 @@
-Code to upload ir sensor value to cloud using ninja.iot
+Code to control two leds using ninja.iot
 Connects to wifi and user id of ninja iot platform
 Reads all values from cloud
 Controls LEDs connected to pins D6 and D7
