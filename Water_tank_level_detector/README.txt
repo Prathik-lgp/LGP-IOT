@@ -1,4 +1,6 @@
 Code to assign soil moisture sensor reading to variable in cloud
+
+.h file is imported to main file and variables are used
 Creates variable SoilMoisture
 Connects to wifi and user id of ninja iot platform
 Assigns soil moisture sensor reading to the varibale SoilMoisture
@@ -11,7 +13,7 @@ If it is greater than 500 then water is not detected so water has not reached th
 If it is less that 500 then water is detected so water has reached maximum level
 When it is below max level green led is on and red led is off
 When it reaches max level red led is on and green led is off
+
 D4 is gpio 2 and D1 is gpio 5
 .h file used to store wifi credentials in variables
-.h file is imported to main file and variables are used
 .h file kept in .gitignore
