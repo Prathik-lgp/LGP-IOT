@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farm Soil Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            padding: 20px;
+            width: 300px;
+            font-size: 18px;
+            transition: background 0.5s;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% {
+                background: white;
+            }
+
+            50% {
+                background: red;
+                color: white;
+            }
+
+            100% {
+                background: white;
+            }
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #2196F3;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Farm Soil Data</h1>
+
+    <div class="card">
+        <h2>D2 Toggle</h2>
+        <label class="switch">
+            <input type="checkbox" id="toggleD2">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <div class="card" id="soilMoistureCard">
+        <h2>Soil Moisture</h2>
+        <p id="soilMoisture">Loading...</p>
+    </div>
+
+    <div class="card" id="conditionCard">
+        <h2>Soil Condition</h2>
+        <p id="soilCondition">Loading...</p>
+    </div>
+
+    <audio id="alarmSound" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
+
+    <script>
+        const soilMoistureEl = document.getElementById("soilMoisture");
+        const soilConditionEl = document.getElementById("soilCondition");
+        const conditionCard = document.getElementById("conditionCard");
+        const alarmSound = document.getElementById("alarmSound");
+        let alarmPlaying = false;
+
+        // Toggle D2
+        document.getElementById("toggleD2").addEventListener("change", function () {
+            const value = this.checked ? 1 : 0;
+            fetch(`https://iot.roboninja.in/index.php?action=write&UID=PR10&D2=${value}`)
+                .then(() => console.log("D2 set to", value));
+        });
+
+        // Fetch Soil Moisture
+        function fetchSoilMoisture() {
+            fetch("https://iot.roboninja.in/index.php?action=read&UID=PR10&SoilMoisture")
+                .then(res => res.text())
+                .then(text => {
+                    console.log("API response:", text);
+
+                    let value = parseFloat(text.trim());
+
+                    if (isNaN(value)) {
+                        soilMoistureEl.textContent = "Error";
+                        soilConditionEl.textContent = "Unable to read value";
+                        return;
+                    }
+
+                    soilMoistureEl.textContent = value;
+
+                    if (value > 800) {
+                        soilConditionEl.textContent = "Soil is too dry!";
+                        conditionCard.classList.add("blink");
+                        if (!alarmPlaying) {
+                            alarmSound.play();
+                            alarmPlaying = true;
+                        }
+                    } else {
+                        soilConditionEl.textContent = "Soil Moisture Normal";
+                        conditionCard.classList.remove("blink");
+                        if (alarmPlaying) {
+                            alarmSound.pause();
+                            alarmSound.currentTime = 0;
+                            alarmPlaying = false;
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching soil moisture:", err);
+                    soilMoistureEl.textContent = "Error";
+                });
+        }
+
+        setInterval(fetchSoilMoisture, 3000);
+        fetchSoilMoisture();
+    </script>
+</body>
+
+</html>
